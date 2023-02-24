@@ -1,4 +1,4 @@
-# test_cloudwalk
+# test_challenge
 
 
 Some challenge items are missing.
