@@ -1,32 +1,32 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
-import 'package:test_cloudwalk/models/death.dart';
-import 'package:test_cloudwalk/models/kills.dart';
-import 'package:test_cloudwalk/models/kills_by_means.dart';
-import 'package:test_cloudwalk/models/player.dart';
+import 'package:parse_quake_log/models/deaths.dart';
+import 'package:parse_quake_log/models/kills.dart';
+import 'package:parse_quake_log/models/kills_by_means.dart';
+import 'package:parse_quake_log/models/player.dart';
 
 class Round {
   int? totalKills;
   List<Player>? players;
   Kills? kills;
-  List<Death>? deaths;
   KillsByMeans killsByMeans;
+  Deaths deaths;
 
   Round(
     this.totalKills,
     this.players,
     this.kills,
-    this.deaths,
     this.killsByMeans,
+    this.deaths,
   );
 
   Map<String, dynamic> toMap() {
     return {
       'totalKills': totalKills,
       'players': players?.map((x) => x.toMap()).toList(),
-      'kills': kills?.toMap(),
-      'deaths': deaths?.map((x) => x.toMap()).toList(),
-      'killsByMeans': killsByMeans.toMap(),
+      'kills': kills!.kills,
+      'killsByMeans': killsByMeans.killsByMeans,
     };
   }
 
@@ -37,30 +37,8 @@ class Round {
           ? List<Player>.from(map['players']?.map((x) => Player.fromMap(x)))
           : null,
       map['kills'] != null ? Kills.fromMap(map['kills']) : null,
-      map['deaths'] != null
-          ? List<Death>.from(map['deaths']?.map((x) => Death.fromMap(x)))
-          : null,
       KillsByMeans.fromMap(map['killsByMeans']),
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory Round.fromJson(String source) => Round.fromMap(json.decode(source));
-
-  Round copyWith({
-    int? totalKills,
-    List<Player>? players,
-    Kills? kills,
-    List<Death>? deaths,
-    KillsByMeans? killsByMeans,
-  }) {
-    return Round(
-      totalKills ?? this.totalKills,
-      players ?? this.players,
-      kills ?? this.kills,
-      deaths ?? this.deaths,
-      killsByMeans ?? this.killsByMeans,
+      Deaths.fromMap(map['deaths']),
     );
   }
 }

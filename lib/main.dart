@@ -1,16 +1,14 @@
-// ignore_for_file: constant_identifier_names, unused_import
-
-import 'dart:convert';
+// ignore_for_file: constant_identifier_names, camel_case_types
 import 'dart:io';
-import "package:collection/collection.dart";
-
-import 'package:test_cloudwalk/models/game.dart';
-import 'package:test_cloudwalk/models/kills.dart';
-import 'package:test_cloudwalk/models/kills_by_means.dart';
-import 'package:test_cloudwalk/models/player.dart';
-import 'package:test_cloudwalk/models/round.dart';
+import 'package:parse_quake_log/models/deaths.dart';
+import 'package:parse_quake_log/models/game.dart';
+import 'package:parse_quake_log/models/kills.dart';
+import 'package:parse_quake_log/models/kills_by_means.dart';
+import 'package:parse_quake_log/models/player.dart';
+import 'package:parse_quake_log/models/round.dart';
 
 const lineOut = '------------------------------------------------------------';
+
 // 26  0:00 ------------------------------------------------------------
 enum types {
   ShutdownGame,
@@ -25,27 +23,28 @@ enum types {
 void main() {
   const String path = './data/qgames.log';
 
-  //get LOG QUAKE
+  //! LOG QUAKE
   List<String> logQuake = File(path).readAsLinesSync();
-  var newGame = [];
 
-  List listNomes = <String>[];
+  var newGame = [];
   var listGames = <Round>[];
 
   int scores = 0;
   int gameCount = 0;
   int ping = 0;
-  int startIndex = 0;
+  int characterRoxIndex = 0;
   int endIndex = 0;
 
-  String nameEnd = '';
-  String nameStart = '';
+  String rowEnd = '';
+  String rowStart = '';
   String playersName = '';
 
   late Game game;
   late Round round;
   late Kills kill;
   late KillsByMeans killsByMeans;
+  late Deaths deaths;
+  late int totalKills;
 
   for (int i = 0; i < logQuake.length; i++) {
     if (logQuake[i].contains(lineOut)) {
@@ -54,101 +53,130 @@ void main() {
       if (logQuake[i].contains(types.InitGame.name)) {
         kill = Kills(kills: {});
         killsByMeans = KillsByMeans(killsByMeans: {});
-        round = Round(0, [], kill, [], killsByMeans);
-        game = Game({round}, gameCount++);
+        deaths = Deaths({});
+        round = Round(0, [], kill, killsByMeans, deaths);
+        game = Game(round, gameCount++);
+        totalKills = 0;
         continue;
       } else if (logQuake[i].contains(types.score.name)) {
-        // Find Players
-        List newName = logQuake[i].split(' ').sublist(10);
+        // ! Find Players
+        List rowLog = logQuake[i].split(' ').sublist(10);
 
-        playersName = newName.where((element) => element.length > 1).join(' ');
+        playersName = rowLog.where((element) => element.length > 1).join(' ');
 
-        //Find Scores
-        nameStart = types.score.name + ': ';
-        nameEnd = types.ping.name;
+        // ! Find Scores
+        rowStart = types.score.name + ': ';
+        rowEnd = types.ping.name;
 
-        startIndex = logQuake[i].indexOf(nameStart);
+        characterRoxIndex = logQuake[i].indexOf(rowStart);
 
-        endIndex = logQuake[i].indexOf(nameEnd, startIndex + nameStart.length);
+        endIndex = logQuake[i].indexOf(
+          rowEnd,
+          characterRoxIndex + rowStart.length,
+        );
 
         scores = int.parse(logQuake[i].substring(
-          startIndex + nameStart.length,
+          characterRoxIndex + rowStart.length,
           endIndex,
         ));
 
-        // Find Ping
-        nameStart = types.ping.name + ': ';
-        nameEnd = types.client.name;
+        // ! Find Ping
+        rowStart = types.ping.name + ': ';
+        rowEnd = types.client.name;
 
-        startIndex = logQuake[i].indexOf(nameStart);
+        characterRoxIndex = logQuake[i].indexOf(rowStart);
 
-        endIndex = logQuake[i].indexOf(nameEnd, startIndex + nameStart.length);
+        endIndex = logQuake[i].indexOf(
+          rowEnd,
+          characterRoxIndex + rowStart.length,
+        );
 
         ping = int.parse(logQuake[i].substring(
-          startIndex + nameStart.length,
+          characterRoxIndex + rowStart.length,
           endIndex,
         ));
 
-        round.players?.add(Player(playersName, scores, ping));
+        // ? Add Player
+        round.players?.add(
+          Player(playersName, scores, ping),
+        );
+
+        // ? Add Kills
+        round.kills!.kills!.addAll({playersName: scores});
 
         continue;
       } else if (logQuake[i].contains(types.Kill.name)) {
-        List _equalList = listNomes;
+        // ? Add TotalKills
+        round.totalKills = totalKills++;
 
-        //Find Kills
-        List newName = logQuake[i].split(' ').sublist(5);
-        playersName = newName.where((element) => element.length > 1).join(' ');
+        // ! Find Kills by means
+        List killsByMeansList = logQuake[i].split(' ').sublist(5);
+        playersName =
+            killsByMeansList.where((element) => element.length > 1).join(' ');
 
-        nameStart = ': ';
-        nameEnd = ' killed';
+        rowStart = types.Kill.name + ': ';
+        rowEnd = ' killed';
 
-        startIndex = playersName.indexOf(nameStart);
+        String name = playersName.split(' ').removeLast();
 
-        endIndex = playersName.indexOf(nameEnd, startIndex + nameStart.length);
+        if (killsByMeans.killsByMeans.keys.contains(name)) {
+          killsByMeans.killsByMeans[name] = killsByMeans.killsByMeans[name] + 1;
+        } else {
+          killsByMeans.killsByMeans[name] = 1;
+        }
 
-        String getName = playersName.substring(
-          startIndex + nameStart.length,
+        // ? Add Kills by means
+        killsByMeans.killsByMeans.addAll(killsByMeans.killsByMeans);
+
+        // ! Find Player Death count
+
+        String row = playersName;
+
+        rowStart = 'killed ';
+        rowEnd = ' by';
+
+        characterRoxIndex = row.indexOf(rowStart);
+
+        endIndex = row.indexOf(
+          rowEnd,
+          characterRoxIndex + rowStart.length,
+        );
+
+        String getDeaths = row.substring(
+          characterRoxIndex + rowStart.length,
           endIndex,
         );
 
-        if (getName != '<world>') {
-          listNomes.add(getName);
-          for (String nome in listNomes) {
-            if (nome == getName) {
-              kill.kills!.addAll({nome: 0});
-            }
-            if (listNomes.any((item) => nome.contains(item))) {
-              // kill.kills!.map((key, value) {
-              //   Kills.fromMap({key: value + 1});
-              // });
-
-              // kill.kills![e] = kill.kills![e] ?? playerKillCount++;
-
-              // round.kills?.addAll({getName: kill.kills![e]!});
-            }
-          }
+        if (round.deaths.deathMap.keys.contains(getDeaths)) {
+          round.deaths.deathMap[getDeaths] =
+              round.deaths.deathMap[getDeaths]! + 1;
+        } else {
+          round.deaths.deathMap[getDeaths] = 1;
         }
-        switch (logQuake[i].contains(types.Kill.name)) {
-          case true:
-            List newName = logQuake[i].split(' ').sublist(5);
-            playersName =
-                newName.where((element) => element.length > 1).join(' ');
-            // print(playersName);
-            nameStart = types.Kill.name + ': ';
-            nameEnd = ' killed';
 
-            killsByMeans.killsByMeans
-                .addAll({playersName.split(' ').removeLast(): 0});
-            break;
-          default:
-        }
         continue;
       }
 
-      if (game.game
-          .where((element) => element.players!.isNotEmpty)
-          .isNotEmpty) {
-        print(game.toMap());
+      // ! Print result
+      if (game.game.players!.isNotEmpty) {
+        print('${game.toMap()}');
+        print('-----------------Ranking-----------------');
+        List<String> keys = game.game.kills!.kills!.keys.toList();
+        List<int> values = game.game.kills!.kills!.values.toList();
+
+        List<int> deathListValues = round.deaths.deathMap.values.toList();
+        List<String> deathListKey = round.deaths.deathMap.keys.toList();
+
+        for (var j = 0; j < keys.length; j++) {
+          for (var n = 0; n < deathListKey.length; n++) {
+            if (keys[j] == deathListKey[n]) {
+              print(
+                "${j + 1}º ${keys[j]} with ${values[j]} kills and ${deathListValues[n]} deaths",
+              );
+            }
+          }
+        }
+        print('\n');
       }
 
       newGame.add(logQuake);

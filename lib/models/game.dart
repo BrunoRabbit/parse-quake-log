@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:test_cloudwalk/models/round.dart';
+import 'package:parse_quake_log/models/round.dart';
 
 class Game {
-  Set<Round> game;
+  Round game;
   int count;
 
   Game(
@@ -12,19 +12,20 @@ class Game {
   );
 
   Map<String, dynamic> toMap() {
-    return {
-      'game_$count': game.map((x) => x.toMap()).toList(),
+    return <String, dynamic>{
+      'game_$count': game.toMap(),
     };
   }
 
   factory Game.fromMap(Map<String, dynamic> map) {
     return Game(
-      Set<Round>.from(map['game']?.map((x) => Round.fromMap(x))),
-      map['count']?.toInt() ?? 0,
+      Round.fromMap(map['game'] as Map<String, dynamic>),
+      map['count'] as int,
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory Game.fromJson(String source) => Game.fromMap(json.decode(source));
+  factory Game.fromJson(String source) =>
+      Game.fromMap(json.decode(source) as Map<String, dynamic>);
 }
