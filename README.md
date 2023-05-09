@@ -1,17 +1,18 @@
 # parse_quake_log
 
 :warning: **IMPORTANT**: 
-    - For better viewing the commetaries, use the extension for Visual Studio Code `Better Comments` 
-    - This project is a challenge for a certain company, as a means of respect for the company and the future people who will join it, I will not disclose the name of the company.
+   
+   - For better viewing the commetaries, use the extension for Visual Studio Code `Better Comments` 
+   - This project is a challenge for a certain company, as a means of respect for the company and the future people who will join it, I will not disclose the name of the company.
 
 ## What Tasks did I do from the challenge
 
-    - I did everything asked in the repository, but I changed some information about `Players`, instead of being a **List** it is a **Map** where it lists the player's name, his score and his ping at the end of the game
-    - I did this because two reasons, first i like to innovate and second i believed i could learn more, and i did it
+   - I did everything asked in the repository, but I changed some information about `Players`, instead of being a **List** it is a             **Map** where it lists the player's name, his score and his ping at the end of the game
+   - I did this because two reasons, first i like to innovate and second i believed i could learn more, and i did it
 
 ## What response will be show up
-    - An example of a JSON from the last game and his ranking:
-    <code>
+   - An example of a JSON from the last game and his ranking:
+ ```json
    {
    "game_20":{
       "totalKills":130,
@@ -66,19 +67,19 @@
       }
    }
 }
-    -----------------Ranking-----------------
+```
+     --------------------Ranking--------------------
     1º Oootsimo with 20 kills and 18 deaths
     2º Zeh with 19 kills and 15 deaths
     3º Isgalamido with 17 kills and 19 deaths
     4º Assasinu Credi with 13 kills and 30 deaths
     5º Dono da Bola with 10 kills and 19 deaths
     6º Mal with 6 kills and 30 deaths
-    </code>
 
-## run the project
+## Run the project
 
-    First of all, clone the project and then open your terminal and copy & paste this code <code>flutter pub get</code>
+   First of all, clone the project and then open your terminal and copy & paste this code <code>flutter pub get</code>
 
-    Run properly you have to add in your terminal these commands <code>cd lib</code> and <code>dart run main.dart</code>
+   Run properly you have to add in your terminal these commands <code>cd lib</code> and <code>dart run main.dart</code>
 
-    you need to create inside the lib file, the data folder and have the .log file to work
+   You need to create inside the lib file, the data folder and have the .log file to work
